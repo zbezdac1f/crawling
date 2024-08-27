@@ -5,7 +5,7 @@ const router = require('express').Router();
 
 // 기본 URL과 페이지 수
 const baseUrl = 'https://www.martjob.co.kr/job/guin.asp';
-const totalPages = 1;  // 테스트를 위해 2페이지로 설정
+const totalPages = 5;  // 테스트를 위해 2페이지로 설정
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -91,7 +91,14 @@ const extractJobDetails = async (html) => {
         const link = titleElement.attr('href');
         const fullLink = `https://www.martjob.co.kr/${link}`;
 
-        if (title) {
+        excludeWords = ['유통', '진열', '관리', '납품']
+        includeWords = ['배송', '배달']
+
+        const mustExclude = excludeWords.some(keyword => title.includes(keyword));
+        const mustInclude = includeWords.some(keyword => title.includes(keyword));
+
+
+        if (title && !mustExclude && mustInclude) {
             const worktime = await extractWorkTime(fullLink); // 각 공고의 worktime 추출
             const phoneNumber = await extractPhoneNumber(fullLink); // 각 공고의 전화번호 추출
             const salary = await extractSalary(fullLink); // 각 공고의 임금 추출
