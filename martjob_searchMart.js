@@ -149,7 +149,7 @@ const main = async () => {
 
         // 페이지를 반복하여 데이터 수집
         for (let page = 9; page <= totalPages; page++) {
-            console.log(`Fetching data from page ${page}...`);
+            console.log(` ${page} 진행중`);
             const html = await fetchHtml(`${baseUrl}?fset=job-118&listorder=&aream=&areagum=&jobcode=08&midkeyw=&gubunchk=0&grade=&areacode0=&areagu_code0=&listRow=30&page=${page}`);
             const jobDetails = await extractJobDetails(html);
             allJobDetails.push(...jobDetails);
