@@ -5,7 +5,7 @@ const router = require('express').Router();
 
 // 기본 URL과 페이지 수
 const baseUrl = 'https://www.martjob.co.kr/job/guin.asp';
-const totalPages = 10;  // 테스트를 위해 페이지 수를 1로 설정
+const totalPages = 3;  // 페이지 끝 범위 
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -13,7 +13,7 @@ const fetchHtml = async (url) => {
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
-        console.error(`Error fetching the HTML:`, error);
+        console.error(`페치오류 :`, error);
         throw error;
     }
 };
@@ -106,6 +106,8 @@ const extractJobDetails = async (html) => {
         const link = titleElement.attr('href');
         const fullLink = `https://www.martjob.co.kr/${link}`;
 
+        //console.log(fullLink)
+
         // 필터링된 키워드 목록
         const excludeKeywords = ['관리', '유통', '관리 진열'];
         const includeKeywords = ['배송', '배달'];
@@ -128,7 +130,8 @@ const extractJobDetails = async (html) => {
                     title: title,             // 채용제목
                     martSize: martSize,       // 생성일
                     worktime: worktime,       // 근무 시간
-                    phoneNumber: phoneNumber, // 전화번호
+                    phoneNumber: phoneNumber,
+                    salary: salary, // 전화번호
                     work_location: workLocation, // 근무 위치
                     link: fullLink            // 채용공고 링크
                 });
@@ -137,25 +140,27 @@ const extractJobDetails = async (html) => {
     }).get();  // .map()의 결과를 배열로 변환
 
     await Promise.all(promises);
-
+    console.log(jobDetails)
     return jobDetails;
+
 };
 
 // 메인 함수
 const main = async () => {
     try {
         const allJobDetails = [];
-
+        console.log(allJobDetails)
         // 페이지를 반복하여 데이터 수집
+        //페이지 시작 범위
         for (let page = 1; page <= totalPages; page++) {
-            console.log(` ${page} 진행중`);
+            console.log(` ${page} 페이지`);
             const html = await fetchHtml(`${baseUrl}?fset=job-118&listorder=&aream=&areagum=&jobcode=08&midkeyw=&gubunchk=0&grade=&areacode0=&areagu_code0=&listRow=30&page=${page}`);
             const jobDetails = await extractJobDetails(html);
             allJobDetails.push(...jobDetails);
         }
 
         // 결과를 파일에 저장
-        fs.writeFileSync('martJob1.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
+        fs.writeFileSync('martJob3.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
         console.log('끝');
     } catch (error) {
         console.error('Error:', error);
