@@ -4,7 +4,7 @@ const fs = require('fs');
 
 // 기본 URL과 페이지 수
 const baseUrl = 'http://search.findjob.co.kr/?kw=%uB9C8%uD2B8%20%uBC30%uC1A1';
-const totalPages = 10;  // 5페이지까지 크롤링
+const totalPages = 5;  // 10페이지까지 크롤링
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -62,10 +62,21 @@ const extractJobDetails = async (html) => {
         // 업무시간 추출
         const workTime = $(element).find('td.sbj > div > div > span.first').text().trim();
 
+        // const excludeKeywords = ['관리', '유통', '관리 진열'];
+        // const includeKeywords = ['배송', '배달'];
+        // // title이 포함 또는 제외 키워드에 따라 필터링
+        // const shouldExclude = excludeKeywords.some(keyword => title.includes(keyword));
+        // const shouldInclude = includeKeywords.some(keyword => title.includes(keyword));
+
+        // if (workLocation && martName && title && workTime && !shouldExclude && shouldInclude)
+
         // 개별 공고 링크 추출 (JavaScript 함수를 포함한 URL 처리)
         const jobLink = $(element).find('td.sbj > div > a').attr('href');
 
-        if (jobLink) {
+        const excludeKeywords = ['관리', '유통', '진열', '푸드', '주류', '축산', '수산', '컴퍼니'];
+        const shouldExclude = excludeKeywords.some(keyword => title.includes(keyword) || martName.includes(keyword))
+
+        if (jobLink && !shouldExclude) {
             const fullLinkMatch = jobLink.match(/GoAdDetail\('([^']+)'/); // 올바른 URL을 추출
             const fullLink = fullLinkMatch ? fullLinkMatch[1] : null;
 
@@ -73,12 +84,12 @@ const extractJobDetails = async (html) => {
                 const { address, phoneNumber } = await extractAdditionalDetails(fullLink);
 
                 jobDetails.push({
-                    workLocation,
                     martName,
+                    workLocation,
                     title,
                     workTime,
-                    address,
-                    phoneNumber,
+                    // address,
+                    // phoneNumber,
                     link: fullLink
                 });
             }
@@ -104,8 +115,8 @@ const main = async () => {
         }
 
         // 결과를 파일에 저장
-        fs.writeFileSync('byorook_Result.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
-        console.log('끝.json');
+        fs.writeFileSync('byorookTest.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
+        console.log('끝');
     } catch (error) {
         console.error('Error:', error);
     }
