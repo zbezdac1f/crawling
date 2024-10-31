@@ -5,7 +5,7 @@ const router = require('express').Router();
 
 // 기본 URL과 페이지 수
 const baseUrl = 'https://www.martjob.co.kr/job/guin.asp';
-const totalPages = 15;  // 페이지 끝 범위 
+const totalPages = 5;  // 페이지 끝 범위 
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -91,11 +91,11 @@ const extractJobDetails = async (html) => {
     const $ = cheerio.load(html);
     const jobDetails = [];
 
-    const promises = $('#lists tr').map(async (i, element) => {
+    const elements = $('#lists tr').toArray();
+    const promises = elements.map(async (element) => {
         const deadline = $(element).find('td:nth-child(6)').text().trim();
         const martSize = $(element).find('td:nth-child(5)').text().trim();
 
-        // martName gconame span에서 추출
         const rowId = $(element).attr('id');
         const martName = $(`#${rowId} > td:nth-child(3) > span.gconame > span`).text().trim();
 
@@ -105,14 +105,10 @@ const extractJobDetails = async (html) => {
         const link = titleElement.attr('href');
         const fullLink = `https://www.martjob.co.kr/${link}`;
 
-        // 필터링된 키워드 목록
         const excludeKeywords = ['관리', '유통', '진열', '푸드', '주류', '축산', '수산', '컴퍼니'];
-        // const includeKeywords = ['배송', '배달'];
-        // title이 포함 또는 제외 키워드에 따라 필터링
-        const shouldExclude = excludeKeywords.some(keyword => title.includes(keyword));
-        // const shouldInclude = includeKeywords.some(keyword => title.includes(keyword));
+        const shouldExclude = excludeKeywords.some(keyword => title.includes(keyword) || martName.includes(keyword));
 
-        if (title && shouldExclude) {
+        if (title && !shouldExclude) {
             const worktime = await extractWorkTime(fullLink);
             const phoneNumber = await extractPhoneNumber(fullLink);
             const salary = await extractSalary(fullLink);
@@ -124,16 +120,16 @@ const extractJobDetails = async (html) => {
                 location: location || '',       // 회사명
                 title: title || '',             // 채용제목
                 martSize: martSize || '',       // 생성일
-                worktime: worktime,             // 근무 시간
-                phoneNumber: phoneNumber,       // 전화번호
-                salary: salary,                 // 임금
-                work_location: workLocation,     // 근무 위치
+                // worktime: worktime,             // 근무 시간
+                // phoneNumber: phoneNumber,       // 전화번호
+                // salary: salary,                 // 임금
+                // work_location: workLocation,     // 근무 위치
                 link: fullLink                  // 채용공고 링크
             });
         }
-    }).get();  // .map()의 결과를 배열로 변환
+    });
 
-    await Promise.all(promises);
+    await Promise.all(promises); // 모든 비동기 작업이 완료될 때까지 대기
     return jobDetails;
 };
 
@@ -142,7 +138,7 @@ const main = async () => {
     try {
         const allJobDetails = [];
         // 페이지를 반복하여 데이터 수집
-        for (let page = 11; page <= totalPages; page++) {
+        for (let page = 1; page <= totalPages; page++) {
             console.log(` ${page} 페이지`);
             const html = await fetchHtml(`${baseUrl}?fset=job-118&listorder=&aream=&areagum=&jobcode=08&midkeyw=&gubunchk=0&grade=&areacode0=&areagu_code0=&listRow=30&page=${page}`);
             const jobDetails = await extractJobDetails(html);
@@ -150,7 +146,7 @@ const main = async () => {
         }
 
         // 결과를 파일에 저장
-        fs.writeFileSync('martJob002.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
+        fs.writeFileSync('martJobKeyword.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
         console.log('끝');
     } catch (error) {
         console.error('Error:', error);
