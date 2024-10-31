@@ -5,7 +5,7 @@ const router = require('express').Router();
 
 // 기본 URL과 페이지 수
 const baseUrl = 'https://www.martjob.co.kr/job/guin.asp';
-const totalPages = 5;  // 페이지 끝 범위 
+const totalPages = 10;  // 페이지 끝 범위 
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -106,19 +106,21 @@ const extractJobDetails = async (html) => {
         const fullLink = `https://www.martjob.co.kr/${link}`;
 
         const excludeKeywords = ['관리', '유통', '진열', '푸드', '주류', '축산', '수산', '컴퍼니'];
+        const includeRegion = ['서울', '경기']
+        const shouldIncludedRegion = includeRegion.some(keyword => location.includes(keyword))
         const shouldExclude = excludeKeywords.some(keyword => title.includes(keyword) || martName.includes(keyword));
 
-        if (title && !shouldExclude) {
+        if (title && !shouldExclude && shouldIncludedRegion) {
             const worktime = await extractWorkTime(fullLink);
             const phoneNumber = await extractPhoneNumber(fullLink);
             const salary = await extractSalary(fullLink);
             const workLocation = await extractWorkLocation(fullLink);
 
             jobDetails.push({
-                martName: martName || '',       // gconame에서 추출한 텍스트
+                martName: martName || '', // 회사명
+                location: location || '', //회사 위치
+                title: title || '',       // gconame에서 추출한 텍스트/ 채용제목
                 deadline: deadline || '',       // 수정일
-                location: location || '',       // 회사명
-                title: title || '',             // 채용제목
                 martSize: martSize || '',       // 생성일
                 // worktime: worktime,             // 근무 시간
                 // phoneNumber: phoneNumber,       // 전화번호

@@ -74,13 +74,15 @@ const extractJobDetails = async (html) => {
         const jobLink = $(element).find('td.sbj > div > a').attr('href');
 
         const excludeKeywords = ['관리', '유통', '진열', '푸드', '주류', '축산', '수산', '컴퍼니'];
+        const includeRegion = ['서울', '경기']
         const shouldExclude = excludeKeywords.some(keyword => title.includes(keyword) || martName.includes(keyword))
+        const shouldIncludedRegion = includeRegion.some(keyword => workLocation.includes(keyword))
 
-        if (jobLink && !shouldExclude) {
+        if (jobLink && !shouldExclude && shouldIncludedRegion) {
             const fullLinkMatch = jobLink.match(/GoAdDetail\('([^']+)'/); // 올바른 URL을 추출
             const fullLink = fullLinkMatch ? fullLinkMatch[1] : null;
 
-            if (fullLink && workLocation && martName && title && workTime) {
+            if (fullLink && workLocation && martName && title && workTime && shouldIncludedRegion) {
                 const { address, phoneNumber } = await extractAdditionalDetails(fullLink);
 
                 jobDetails.push({
@@ -115,7 +117,7 @@ const main = async () => {
         }
 
         // 결과를 파일에 저장
-        fs.writeFileSync('byorookTest.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
+        fs.writeFileSync('byorook1.json', JSON.stringify(allJobDetails, null, 2), 'utf8');
         console.log('끝');
     } catch (error) {
         console.error('Error:', error);
