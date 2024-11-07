@@ -9,7 +9,7 @@ const totalPages = 10; // 1~5페이지까지 가져오기
 
 // 필터 조건
 const includeRegion = ['서울', '경기']; // 지역에 포함된 값
-const excludeKeywords = ['관리', '유통', '진열', '푸드', '주류', '축산', '수산', '컴퍼니']; // 제목에 포함된 키워드
+const excludeKeywords = ['관리', '유통', '진열', '푸드', '주류', '축산', '수산', '컴퍼니', '홈플러스', '이마트', '하나로마트', '물류', '응대', 'CJ']; // 제목에 포함되면 안되는 키워드 
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -25,9 +25,9 @@ const fetchHtml = async (url) => {
 // 각 공고 페이지에서 제목, 위치, 회사명, deadline 추출
 const extractJobDetails = async (html) => {
     const $ = cheerio.load(html);
-    const title = $('#__next > div > div.DefaultLayout_container__fWx2h > main > div.DefaultLayout_content__yfj55 > div.DefaultLayout_column--left__1C6jm > div > header > div > div:nth-child(1) > div:nth-child(1) > h1').text().trim();
     const martName = $('#__next > div > div.DefaultLayout_container__fWx2h > main > div.DefaultLayout_content__yfj55 > div.DefaultLayout_column--left__1C6jm > div > header > div > div:nth-child(1) > div.detail-recruit-base__company > span').text().trim();
     const location = $('#__next > div > div.DefaultLayout_container__fWx2h > main > div.DefaultLayout_content__yfj55 > div.DefaultLayout_column--left__1C6jm > div > div.DetailRecruitArea_detail-recruit-area__T6pv4 > p').text().trim();
+    const title = $('#__next > div > div.DefaultLayout_container__fWx2h > main > div.DefaultLayout_content__yfj55 > div.DefaultLayout_column--left__1C6jm > div > header > div > div:nth-child(1) > div:nth-child(1) > h1').text().trim();
     const deadline = $('#__next > div > div.DefaultLayout_container__fWx2h > main > div.DefaultLayout_content__yfj55.DefaultLayout_resolution--1030__XMj_4.DefaultLayout_column__m2sx4.DefaultLayout_margin-default__eyOmG > div.DefaultLayout_column--left__1C6jm > div > header > div > div:nth-child(1) > div:nth-child(1) > h1 > span').text().trim(); // deadline 추가
 
     return { title, martName, location, deadline };
@@ -54,7 +54,7 @@ const extractJobLinks = async (html) => {
 const filterJobDetails = (jobDetails) => {
     const { title, location } = jobDetails;
 
-    // 지역에 포함된 값이 있어야 하고, 제목에 제외 키워드가 없어야 한다
+    // 지역에 포함된 값이 있어야 하고, 제목에 제외 키워드가 없어야 한다..
     const hasIncludeRegion = includeRegion.some(region => location.includes(region));
     const hasExcludeKeywords = excludeKeywords.some(keyword => title.includes(keyword));
 
@@ -62,7 +62,8 @@ const filterJobDetails = (jobDetails) => {
     return hasIncludeRegion && !hasExcludeKeywords;
 };
 
-// 메인 함수
+
+// 가동부
 const main = async () => {
     try {
         const allJobDetails = [];
