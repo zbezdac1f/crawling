@@ -4,7 +4,7 @@ const fs = require('fs');
 
 // 기본 URL 설정 (페이지 번호는 동적으로 추가됩니다)
 const baseUrl = 'https://www.jobkorea.co.kr/Search/?stext=부품배송&tabType=recruit&Page_No=';
-const totalPages = 10; // 크롤링할 총 페이지 수
+const totalPages = 3; // 크롤링할 총 페이지 수
 
 // HTML을 가져오는 함수
 const fetchHtml = async (url) => {
@@ -29,8 +29,9 @@ const extractJobList = async (html) => {
             .text()
             .trim();
         const companyName = $(element)
-            .find('div.list-section-information > div > a')
-            .attr('title') || ''; // 회사 이름을 title 속성에서 가져옴
+            .find('div.list-section-corp > a')
+            .text()
+            .trim(); // 회사 이름을 새로 지정된 셀렉터에서 가져옴
         const region = $(element)
             .find('div.list-section-information > ul > li:nth-child(4)')
             .text()
